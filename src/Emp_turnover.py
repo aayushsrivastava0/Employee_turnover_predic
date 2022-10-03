@@ -18,13 +18,13 @@ col_names = hr.columns.tolist()
 print("Column names:")
 print(col_names)
 print("\nSample data:")
-print(hr.head())
 
 #Data Preprocessing
-print(hr.isna().any().any())
+
+#print(hr.isna().any().any())
 hr=hr.rename(columns = {'sales':'department'})
 
-#Note
+
 # The “left” column is the outcome variable recording one and 0. 1 for employees who left the company and 0 for those who didn’t.
 
 print(hr['department'].unique())
@@ -49,11 +49,12 @@ print(hr.columns.values)
 hr_vars=hr.columns.values.tolist()
 y=['left']
 X=[i for i in hr_vars if i not in y]
-print(hr.columns)
+
 
 #Feature Selection
 model = LogisticRegression()
 rfe = RFE(model, n_features_to_select=10)
+
 rfe = rfe.fit(hr[X], hr[y].values.ravel())  #.values will give the values in a numpy array (shape: (n,1)) .ravel will convert that array shape to (n, ) (i.e. flatten it)
 
 
@@ -62,20 +63,15 @@ cols=['satisfaction_level', 'last_evaluation', 'time_spend_company', 'Work_accid
 X=hr[cols]
 y=hr['left']
 
-#Logistic Regression Model to Predict Employee Turnover
+#Train and Test Set to Predict Employee Turnover
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
-logreg = LogisticRegression(max_iter=2000)
-logreg.fit(X_train, y_train)
-
-#Accuracy of our logistic regression model.
-
-('Logistic regression accuracy: {:.3f}'.format(accuracy_score(y_test, logreg.predict(X_test))))
 
 
 #Using Random Forest Classification model
 rf = RandomForestClassifier()
 rf.fit(X_train, y_train)
 random_forest_predic = rf.predict(X_test)
+
 # Accuracy of RF classifier
 print('Random Forest Accuracy: {:.3f}'.format(accuracy_score(y_test, rf.predict(X_test))))
 
@@ -87,3 +83,13 @@ print(classification_report(y_test, rf.predict(X_test)))
 #Confusion matrix for random classifier
 cm = confusion_matrix(y_test, random_forest_predic)
 print(cm)
+
+#Let’s have a look at the feature importance of our random forest classification model.
+
+feature_labels = np.array(['satisfaction_level', 'last_evaluation', 'time_spend_company', 'Work_accident', 'promotion_last_5years',
+      'department_RandD', 'department_hr', 'department_management', 'salary_high', 'salary_low'])
+importance = rf.feature_importances_
+feature_indexes_by_importance = importance.argsort()
+print("Feature importance for our RF classifier")
+for index in feature_indexes_by_importance:
+    print('{}-{:.2f}%'.format(feature_labels[index], (importance[index] *100.0)))
