@@ -67,6 +67,13 @@ y=hr['left']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 
 
+#Using Logistics Regression Classification model
+logreg = LogisticRegression()
+logreg.fit(X_train, y_train)
+
+#Accuracy of LR
+print('Logistic regression accuracy: {:.3f}'.format(accuracy_score(y_test, logreg.predict(X_test))))
+
 #Using Random Forest Classification model
 rf = RandomForestClassifier()
 rf.fit(X_train, y_train)
@@ -78,7 +85,8 @@ print('Random Forest Accuracy: {:.3f}'.format(accuracy_score(y_test, rf.predict(
 
 #Classification report for models
 
-print(classification_report(y_test, rf.predict(X_test)))
+print("RF model\n" + classification_report(y_test, rf.predict(X_test)))
+print("LG model\n" + classification_report(y_test, logreg.predict(X_test)))
 
 #Confusion matrix for random classifier
 cm = confusion_matrix(y_test, random_forest_predic)
@@ -93,3 +101,21 @@ feature_indexes_by_importance = importance.argsort()
 print("Feature importance for our RF classifier")
 for index in feature_indexes_by_importance:
     print('{}-{:.2f}%'.format(feature_labels[index], (importance[index] *100.0)))
+
+
+#ROC curve of
+logit_roc_auc = roc_auc_score(y_test, logreg.predict(X_test))
+fpr, tpr, thresholds = roc_curve(y_test, logreg.predict_proba(X_test)[:,1])
+rf_roc_auc = roc_auc_score(y_test, rf.predict(X_test))
+rf_fpr, rf_tpr, rf_thresholds = roc_curve(y_test, rf.predict_proba(X_test)[:,1])
+plt.figure()
+plt.plot(fpr, tpr, label='Logistic Regression (area = %0.2f)' % logit_roc_auc)
+plt.plot(rf_fpr, rf_tpr, label='Random Forest (area = %0.2f)' % rf_roc_auc)
+plt.plot([0, 1], [0, 1],'r--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver operating characteristic(ROC)')
+plt.legend(loc="lower right")
+plt.savefig('demo.png', bbox_inches='tight')
